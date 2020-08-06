@@ -1,13 +1,14 @@
 import React from 'react'
 import styled from 'styled-components'
-import { RouteComponentProps, Link } from '@reach/router'
-import { useQuery, gql } from '@apollo/client'
+import { RouteComponentProps } from '@reach/router'
 import { Container as NesContainer } from 'nes-react'
+import Select from 'react-select'
+import PokemonList from './PokemonList'
 
 const Container = styled(NesContainer)`
   && {
     background: white;
-    margin: 2rem 25%;
+    margin: 0 25%;
 
     ::after {
       z-index: unset;
@@ -15,63 +16,94 @@ const Container = styled(NesContainer)`
     }
   }
 `
-
-const List = styled.ul`
-  display: inline-flex;
-  flex-direction: column;
-  align-items: flex-end;
-`
-
-const ListItem = styled.li`
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-end;
-  margin-bottom: 1rem;
-
-  > *:first-child {
-    margin-right: 1rem;
-  }
-`
-
-const POKEMON_MANY = gql`
-  query($skip: Int, $limit: Int) {
-    pokemonMany(skip: $skip, limit: $limit) {
-      id
-      name
-      num
-      img
-    }
-  }
-`
+// Types for the dropdown
+const types = [
+  { value: 'Normal', label: 'Normal' },
+  { value: 'Fighting', label: 'Fighting' },
+  { value: 'Flying', label: 'Flying' },
+  { value: 'Poison', label: 'Poison' },
+  { value: 'Ground', label: 'Ground' },
+  { value: 'Rock', label: 'Rock' },
+  { value: 'Bug', label: 'Bug' },
+  { value: 'Ghost', label: 'Ghost' },
+  { value: 'Steel', label: 'Steel' },
+  { value: 'Fire', label: 'Fire' },
+  { value: 'Water', label: 'Water' },
+  { value: 'Grass', label: 'Grass' },
+  { value: 'Electric', label: 'Electric' },
+  { value: 'Psychic', label: 'Psychic' },
+  { value: 'Ice', label: 'Ice' },
+  { value: 'Dragon', label: 'Dragon' },
+  { value: 'Dark', label: 'Dark' },
+  { value: 'Fairy', label: 'Fairy' },
+]
 
 const Pokemon: React.FC<RouteComponentProps & { clickLink: Function }> = ({
   clickLink,
 }) => {
-  const { loading, error, data } = useQuery(POKEMON_MANY)
-  const pokemonList:
-    | Array<{ id: string; name: string; img: string; num: string }>
-    | undefined = data?.pokemonMany
+  const [searchValue, setSearchValue] = React.useState('')
+  const [typeFilter, setTypeFilter] = React.useState([] as string[])
+  const [weaknessFilter, setWeaknessFilter] = React.useState([] as string[])
 
-  if (loading) {
-    return <p>Loading...</p>
+  const handleWeaknessChange = (result: any) => {
+    // Due to react-select returning null when emptied we need to change this to an empt array to properly
+    //affect state
+    if (!result) {
+      result = []
+    }
+    setWeaknessFilter(result.map((value: any) => value.value))
   }
-  if (error || !pokemonList) {
-    return <p>Error!</p>
+
+  const handleTypeChange = (result: any) => {
+    // Due to react-select returning null when emptied we need to change this to an empt array to properly
+    //affect state
+    if (!result) {
+      result = []
+    }
+    setTypeFilter(result.map((value: any) => value.value))
+  }
+
+  const handleSearchChange = (event: any) => {
+    setSearchValue(event.target.value)
   }
 
   return (
-    <Container rounded>
-      <List>
-        {pokemonList.map(pokemon => (
-          <Link to={pokemon.id} onMouseDown={clickLink as any}>
-            <ListItem>
-              <img src={pokemon.img} />
-              {pokemon.name} - {pokemon.num}
-            </ListItem>
-          </Link>
-        ))}
-      </List>
-    </Container>
+    <div>
+      <Container rounded>
+        <span>Pokémon Search: </span>
+        <input
+          onPasteCapture={handleSearchChange}
+          onKeyUp={handleSearchChange}
+        ></input>
+        <div>
+          <span>Filter by: </span>
+          <div>
+            <span>Type: </span>
+            <Select
+              closeMenuOnSelect={false}
+              isMulti
+              options={types}
+              onChange={handleTypeChange}
+            />
+          </div>
+          <div>
+            <span>Weakness: </span>
+            <Select
+              closeMenuOnSelect={false}
+              isMulti
+              options={types}
+              onChange={handleWeaknessChange}
+            />
+          </div>
+        </div>
+      </Container>
+      <PokemonList
+        clickLink={clickLink}
+        searchValue={searchValue}
+        typeFilter={typeFilter}
+        weaknessFilter={weaknessFilter}
+      />
+    </div>
   )
 }
 

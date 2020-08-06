@@ -1,0 +1,7 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Pokemon Renders Correctly 1`] = `
+<p>
+  Loading...
+</p>
+`;
